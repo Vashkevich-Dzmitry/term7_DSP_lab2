@@ -5,18 +5,6 @@ namespace DSP_lab2
 {
     class PulseSignal : GeneratedSignal
     {
-        private float d;
-        public float D
-        {
-            get => d;
-            set
-            {
-                d = value;
-                Generate(phi0, a, f, n, d);
-                OnPropertyChanged(nameof(D));
-            }
-        }
-
         public override string SignalName { get; set; }
         public override PointF[] Points { get; set; }
 
@@ -27,7 +15,7 @@ namespace DSP_lab2
             Points = Generate(phi0, a, f, n, d);
         }
 
-        public override PointF[] Generate(float phi0, float A, float f, int N, float d = 0.5f)
+        public override PointF[] Generate(float phi0, float A, float f, int N, float? d = 0.5f)
         {
             Points = new PointF[N];
             for (int n = 0; n < N; n++)

@@ -14,7 +14,7 @@ namespace DSP_lab2
             Points = Generate(phi0, a, f, n);
         }
 
-        public override PointF[] Generate(float phi0, float A, float f, int N, float d = 0.5f)
+        public override PointF[] Generate(float phi0, float A, float f, int N, float? d = null)
         {
             Points = new PointF[N];
             for (int n = 0; n < N; n++)
