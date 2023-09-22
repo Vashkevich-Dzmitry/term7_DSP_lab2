@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace DSP_lab2
+namespace DSP_lab2.Signals
 {
     class SineSignal : GeneratedSignal
     {

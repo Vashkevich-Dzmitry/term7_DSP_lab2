@@ -1,17 +1,11 @@
 ﻿using DSP_lab2.Helpers;
 using DSP_lab2.Signals;
 using ScottPlot;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace DSP_lab2
 {

@@ -1,4 +1,4 @@
-﻿namespace DSP_lab2
+﻿namespace DSP_lab2.Signals
 {
     public enum SignalTypes
     {

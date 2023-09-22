@@ -5,11 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DSP_lab2"
+        xmlns:signals="clr-namespace:DSP_lab2.Signals"
+        xmlns:helpers="clr-namespace:DSP_lab2.Helpers"
         mc:Ignorable="d"
         Title="MainWindow" Height="1080" Width="1920" WindowState="Maximized" FontSize="20">
-    <Window.Resources>
-        <local:NullToEmptyStringConverter x:Key="DValueConverter" />
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -55,7 +54,7 @@
                 
             <DockPanel Name="SignalParamsPanel" Margin="5">
                     <ComboBox Name="SignalTypeComboBox" Margin="5, 20, 5, 10" DockPanel.Dock="Top"
-                          ItemsSource="{local:EnumBindingSourceExtension local:SignalTypes}" SelectedItem="{Binding SelectedSignal.SignalType}">
+                          ItemsSource="{helpers:EnumBindingSourceExtension signals:SignalTypes}" SelectedItem="{Binding SelectedSignal.SignalType}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding ChangeTypeCommand}" CommandParameter="{Binding ElementName=SignalTypeComboBox, Path=SelectedItem}"/>
