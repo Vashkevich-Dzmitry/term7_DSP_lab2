@@ -1,4 +1,5 @@
 ﻿using DSP_lab2.Helpers;
+using DSP_lab2.Signals;
 using ScottPlot;
 using System;
 using System.Collections.Concurrent;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DSP_lab2
 {
@@ -57,18 +59,18 @@ namespace DSP_lab2
                 {
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged -= (object sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
+                        selectedSignal.PropertyChanged -= (object? sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
                     }
 
                     selectedSignal = value;
                     IsSignalSelected = selectedSignal != null;
 
-                    OnPropertyChanged(nameof(SelectedSignal));
-
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged += (object sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
+                        selectedSignal.PropertyChanged += (object? sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
                     }
+                    
+                    OnPropertyChanged(nameof(SelectedSignal));
                 }
             }
         }
@@ -104,7 +106,7 @@ namespace DSP_lab2
 
         public ObservableCollection<(double x, double y)> ComputeResultingSignal()
         {
-            ConcurrentBag<(double x, double y)> concurrentResult = new ConcurrentBag<(double x, double y)>();
+            ConcurrentBag<(double x, double y)> concurrentResult = new();
 
             Parallel.ForEach(Signals.SelectMany(signal => signal.Points).GroupBy(point => point.X),
                 group =>
@@ -130,7 +132,7 @@ namespace DSP_lab2
                     SelectedSignal = signal;
 
                     ResultingSignal = ComputeResultingSignal();
-                });
+                }, (obj) => Signals.Count < 5);
             }
         }
         private RelayCommand? deleteCommand;
@@ -140,15 +142,43 @@ namespace DSP_lab2
             {
                 return deleteCommand ??= new RelayCommand(obj =>
                 {
-                    GeneratedSignal signal = obj as GeneratedSignal;
-                    if (signal != null)
+                    if (obj is GeneratedSignal signal)
                     {
                         Signals.Remove(signal);
-                    }
-                    SelectedSignal = null;
+                        SelectedSignal = null;
 
-                    ResultingSignal = ComputeResultingSignal();
-                });
+                        ResultingSignal = ComputeResultingSignal();
+                    }
+                }, (obj) => SelectedSignal != null);
+            }
+        }
+
+        private RelayCommand? changeTypeCommand;
+        public RelayCommand ChangeTypeCommand
+        {
+            get
+            {
+                return changeTypeCommand ??= new RelayCommand(obj =>
+                {
+                    SignalTypes? signalType = obj as SignalTypes?;
+                    if (signalType != null && signalType == SelectedSignal!.SignalType)
+                    {
+                        GeneratedSignal newSignal = signalType switch
+                        {
+                            SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
+                            SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
+                            SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A, 0.5f),
+                            _ => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
+                        };
+
+                        int signalIndex = Signals.IndexOf(SelectedSignal);
+                        Signals.Insert(signalIndex, newSignal);
+                        SelectedSignal = Signals[signalIndex];
+                        Signals.RemoveAt(signalIndex + 1);
+
+                        ResultingSignal = ComputeResultingSignal();
+                    }
+                }, (obj) => SelectedSignal != null && obj != null);
             }
         }
 
@@ -166,7 +196,8 @@ namespace DSP_lab2
 
             Plot = plot;
 
-            ResultingSignal = ComputeResultingSignal();
+            resultingSignal = ComputeResultingSignal();
+            DrawCharts();
         }
 
         private void DrawCharts()

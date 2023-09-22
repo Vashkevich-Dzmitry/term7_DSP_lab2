@@ -5,12 +5,11 @@ namespace DSP_lab2
 {
     class PulseSignal : GeneratedSignal
     {
-        public override string SignalName { get; set; }
+        public override SignalTypes SignalType { get; set; } = SignalTypes.Pulse;
         public override PointF[] Points { get; set; }
 
         public PulseSignal(float phi0, float f, int n, float a, float d): base(phi0, f, n, a)
         {
-            SignalName = "pulse";
             this.d = d;
             Points = Generate(phi0, a, f, n, d);
         }

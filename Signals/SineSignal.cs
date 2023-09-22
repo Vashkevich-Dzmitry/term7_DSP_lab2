@@ -5,12 +5,11 @@ namespace DSP_lab2
 {
     class SineSignal : GeneratedSignal
     {
-        public override string SignalName { get; set; }
+        public override SignalTypes SignalType { get; set; } = SignalTypes.Sine;
         public override PointF[] Points { get; set; }
 
         public SineSignal(float phi0, float f, int n, float a) : base(phi0, f, n, a)
         {
-            SignalName = "sine";
             Points = Generate(phi0, a, f, n);
         }
 

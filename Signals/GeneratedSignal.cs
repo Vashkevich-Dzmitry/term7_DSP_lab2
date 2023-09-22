@@ -17,7 +17,7 @@ namespace DSP_lab2
             set
             {
                 phi0 = value;
-                Generate(phi0, a, f, n);
+                Generate(phi0, a, f, n, d);
                 OnPropertyChanged(nameof(Phi0));
             }
         }
@@ -27,7 +27,7 @@ namespace DSP_lab2
             set
             {
                 f = value;
-                Generate(phi0, a, f, n);
+                Generate(phi0, a, f, n, d);
                 OnPropertyChanged(nameof(F));
             }
         }
@@ -37,7 +37,7 @@ namespace DSP_lab2
             set
             {
                 n = value;
-                Generate(phi0, a, f, n);
+                Generate(phi0, a, f, n, d);
                 OnPropertyChanged(nameof(N));
             }
         }
@@ -47,7 +47,7 @@ namespace DSP_lab2
             set
             {
                 a = value;
-                Generate(phi0, a, f, n);
+                Generate(phi0, a, f, n, d);
                 OnPropertyChanged(nameof(A));
             }
         }
@@ -63,7 +63,7 @@ namespace DSP_lab2
             }
         }
 
-        public abstract string SignalName { get; set; }
+        public abstract SignalTypes SignalType { get; set; }
         public abstract PointF[] Points { get; set; }
 
         public GeneratedSignal(float phi0, float f, int n, float a)

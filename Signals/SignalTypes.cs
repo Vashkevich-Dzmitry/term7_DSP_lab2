@@ -1,6 +1,6 @@
 ﻿namespace DSP_lab2
 {
-    enum SignalTypes
+    public enum SignalTypes
     {
         Sine,
         Triangle,

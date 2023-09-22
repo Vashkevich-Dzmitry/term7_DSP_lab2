@@ -5,12 +5,11 @@ namespace DSP_lab2.Signals
 {
     class SawtoothSignal : GeneratedSignal
     {
-        public override string SignalName { get; set; }
+        public override SignalTypes SignalType { get; set; } = SignalTypes.Sawtooth;
         public override PointF[] Points { get; set; }
 
         public SawtoothSignal(float phi0, float f, int n, float a) : base(phi0, f, n, a)
         {
-            SignalName = "sawtooth";
             Points = Generate(phi0, a, f, n);
         }
 

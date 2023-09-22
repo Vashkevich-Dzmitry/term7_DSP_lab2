@@ -7,6 +7,9 @@
         xmlns:local="clr-namespace:DSP_lab2"
         mc:Ignorable="d"
         Title="MainWindow" Height="1080" Width="1920" WindowState="Maximized" FontSize="20">
+    <Window.Resources>
+        <local:NullToEmptyStringConverter x:Key="DValueConverter" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -38,7 +41,7 @@
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Type" Binding="{Binding SignalName}" Width="2*"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding SignalType}" Width="2*"/>
                         <DataGridTextColumn Header="f" Binding="{Binding F}" Width="*" />
                         <DataGridTextColumn Header="A" Binding="{Binding A}" Width="*" />
                         <DataGridTextColumn Header="φ₀" Binding="{Binding Phi0}" Width="*" />
@@ -52,10 +55,10 @@
                 
             <DockPanel Name="SignalParamsPanel" Margin="5">
                     <ComboBox Name="SignalTypeComboBox" Margin="5, 20, 5, 10" DockPanel.Dock="Top"
-                          ItemsSource="{local:EnumBindingSourceExtension local:SignalTypes}">
+                          ItemsSource="{local:EnumBindingSourceExtension local:SignalTypes}" SelectedItem="{Binding SelectedSignal.SignalType}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding TypeChangeCommand}" CommandParameter="{Binding SelectedSignal}"/>
+                                <i:InvokeCommandAction Command="{Binding ChangeTypeCommand}" CommandParameter="{Binding ElementName=SignalTypeComboBox, Path=SelectedItem}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>
@@ -77,8 +80,8 @@
                 </DockPanel>
                 <DockPanel Name="DutyCyclePanel" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Visibility="Collapsed" Margin="5" DockPanel.Dock="Top">
                     <Label DockPanel.Dock="Left" VerticalAlignment="Center">d:</Label>
-                    <Label Content="{Binding ElementName=DValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" ContentStringFormat="{}{0:F2}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-                        <Slider Value="{Binding SelectedSignal.D}" Name="DValue" DockPanel.Dock="Right" Maximum="1" Minimum="0" TickPlacement="Both" TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="10, 0"/>
+                        <Label Content="{Binding ElementName=DValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" ContentStringFormat="{}{0:F2}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
+                    <Slider Value="{Binding SelectedSignal.D, TargetNullValue=0}" Name="DValue" DockPanel.Dock="Right" Maximum="1" Minimum="0" TickPlacement="Both" TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="10, 0"/>
                 </DockPanel>
             </DockPanel>
             </Expander>
@@ -102,12 +105,12 @@
         <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">N:</Label>
             <Label Content="{Binding ElementName=NValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-            <Slider Name="NValue" DockPanel.Dock="Right" SmallChange="4" LargeChange="128" Maximum="256" Minimum="4" TickPlacement="Both" Ticks="4, 8, 16, 32, 64, 128, 256" Value="{Binding N}" IsSnapToTickEnabled="True" Margin="10, 0" ValueChanged="NValue_ValueChanged"/>
+            <Slider Name="NValue" DockPanel.Dock="Right" SmallChange="4" LargeChange="128" Maximum="256" Minimum="4" TickPlacement="Both" Ticks="4, 8, 16, 32, 64, 128, 256" Value="{Binding N}" IsSnapToTickEnabled="True" Margin="10, 0"/>
         </DockPanel>
         <DockPanel Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">k:</Label>
             <Label Content="{Binding ElementName=KValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="2" LargeChange="128" Maximum="256" Minimum="2" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256" Value="{Binding K}" IsSnapToTickEnabled="True" Margin="10, 0" ValueChanged="NValue_ValueChanged"/>
+            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="2" LargeChange="128" Maximum="256" Minimum="2" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256" Value="{Binding K}" IsSnapToTickEnabled="True" Margin="10, 0"/>
         </DockPanel>
     </Grid>
 </Window>
