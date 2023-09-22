@@ -22,14 +22,14 @@ namespace DSP_lab2
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly SignalWorker signalWorker;
-
+        SignalViewModel signalViewModel;
         public MainWindow()
         {
             InitializeComponent();
+            signalViewModel = new(SignalsPlot);
 
-            signalWorker = new SignalWorker();
-            SignalsGrid.ItemsSource = signalWorker.GetSignals();
+            DataContext = signalViewModel;
+
         }
 
         private void SignalTypeComboBoxChanged(object sender, SelectionChangedEventArgs e)
@@ -55,16 +55,6 @@ namespace DSP_lab2
                         break;
                 }
 
-                //пересчитать всё
-            }
-        }
-
-        private void SignalsGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            int index = SignalsGrid.SelectedIndex;
-            if (index >= 0)
-            {
-                signalWorker.RemoveSignalAt(index);
                 //пересчитать всё
             }
         }
@@ -95,9 +85,17 @@ namespace DSP_lab2
             //пересчитать всё
         }
 
-        private void AddSignalButton_Click(object sender, RoutedEventArgs e)
+        private void SignalsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            signalWorker.AddSignal(new SineSignal((float)Phi0Value.Value, (float)FValue.Value, (int)NValue.Value, (float)AValue.Value), SignalsGrid);
+            if (SignalsGrid.SelectedItem != null)
+            {
+                //DisplaySignalParamsPanel(SignalsGrid.SelectedIndex);
+            }
+        }
+
+        private void DisplaySignalParamsPanel(int index)
+        {
+            throw new NotImplementedException();
         }
     }
 }

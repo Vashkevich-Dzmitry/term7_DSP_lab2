@@ -57,12 +57,9 @@ namespace DSP_lab2
             get => d;
             set
             {
-                if (value.HasValue)
-                {
-                    d = value;
-                    Generate(phi0, a, f, n);
-                    OnPropertyChanged(nameof(A));
-                }
+                d = value;
+                Generate(phi0, a, f, n, d);
+                OnPropertyChanged(nameof(A));
             }
         }
 
@@ -77,7 +74,7 @@ namespace DSP_lab2
             this.a = a;
         }
 
-        public abstract PointF[] Generate(float fi0, float A, float f, int N, float? d = null);
+        public abstract PointF[] Generate(float Phi0, float A, float f, int N, float? d = null);
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
