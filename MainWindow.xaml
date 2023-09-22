@@ -8,7 +8,7 @@
         xmlns:signals="clr-namespace:DSP_lab2.Signals"
         xmlns:helpers="clr-namespace:DSP_lab2.Helpers"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1080" Width="1920" WindowState="Maximized" FontSize="20">
+        Title="Digital Signal Processing" Height="1080" Width="1920" WindowState="Maximized" FontSize="20" Icon="/dsp_icon.png">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
