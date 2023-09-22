@@ -113,9 +113,9 @@
         <WpfPlot Name="SignalsPlot" Grid.Column="1" Margin="15"/>
         <!--
         <WpfPlot Name="PolarPlot" Grid.Column="2" Margin="15"/>
+         -->
         <WpfPlot Name="AmplitudePlot" Grid.Column="1" Grid.Row="1" Margin="15"/>
         <WpfPlot Name="PhasePlot" Grid.Column="2" Grid.Row="1" Margin="15"/>
-         -->
         <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Top" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">N:</Label>
             <Label Content="{Binding ElementName=NValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
@@ -125,7 +125,7 @@
         <DockPanel Grid.Column="2" Grid.Row="2" VerticalAlignment="Top" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">k:</Label>
             <Label Content="{Binding ElementName=KValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="2" LargeChange="128" Maximum="256" Minimum="2" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256" Value="{Binding K}" IsSnapToTickEnabled="True" Margin="10, 0"/>
+            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="2" LargeChange="128" Maximum="256" Minimum="2" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256" Value="{Binding DFT.K}" IsSnapToTickEnabled="True" Margin="10, 0"/>
         </DockPanel>
     </Grid>
 </Window>

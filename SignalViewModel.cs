@@ -32,17 +32,6 @@ namespace DSP_lab2
             }
         }
 
-        private int k;
-        public int K
-        {
-            get => k;
-            set
-            {
-                k = value;
-                OnPropertyChanged(nameof(K));
-            }
-        }
-
         private GeneratedSignal? selectedSignal;
         public GeneratedSignal? SelectedSignal
         {
@@ -111,7 +100,9 @@ namespace DSP_lab2
             return new ObservableCollection<(double x, double y)>(concurrentResult.OrderBy(item => item.x));
         }
 
-        public WpfPlot Plot { get; set; }
+        public WpfPlot SignalsPlot { get; set; }
+        public WpfPlot AmplitudePlot { get; set; }
+        public WpfPlot PhasePlot { get; set; }
 
 
         private RelayCommand? addCommand;
@@ -176,10 +167,11 @@ namespace DSP_lab2
             }
         }
 
-        public SignalViewModel(WpfPlot plot)
+        public DiscreteFourierTransformation DFT { get; set; }
+
+        public SignalViewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
             n = 128;
-            k = 64;
 
             Signals = new ObservableCollection<GeneratedSignal>
             {
@@ -188,18 +180,22 @@ namespace DSP_lab2
                 new SineSignal(0, 1, N, 1),
             };
 
-            Plot = plot;
+            DFT = new DiscreteFourierTransformation();
+
+            SignalsPlot = signalsPlot;
+            PhasePlot = phasePlot;
+            AmplitudePlot = amplitudePlot;
 
             resultingSignal = ComputeResultingSignal();
             DrawCharts();
         }
 
-        private void DrawCharts()
+        private void DrawCharts() //переделать на рисование всех графиков по очереди, вынести рисование каждого в отдельную
         {
-            Plot.Plot.Clear();
-            Plot.Plot.SetAxisLimits(xMin: 0, xMax: 1);
-            Plot.Plot.AddScatter(ResultingSignal.Select(point => point.x).ToArray(), ResultingSignal.Select(point => point.y).ToArray(), System.Drawing.Color.LightGreen, 5);
-            Plot.Refresh();
+            SignalsPlot.Plot.Clear();
+            SignalsPlot.Plot.SetAxisLimits(xMin: 0, xMax: 1);
+            SignalsPlot.Plot.AddScatter(ResultingSignal.Select(point => point.x).ToArray(), ResultingSignal.Select(point => point.y).ToArray(), System.Drawing.Color.LightGreen, 5);
+            SignalsPlot.Refresh();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
