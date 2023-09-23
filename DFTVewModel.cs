@@ -99,13 +99,14 @@ namespace DSP_lab2
 
         public double[] ComputePhaseSpectrum(int k)
         {
-            double[] values = new double[k / 2];
+            double[] result = new double[k / 2];
             for (int j = 0; j < k / 2; j++)
             {
-                values[j] = Math.Atan2(SinSpectrum![j], CosSpectrum![j]);
+                //result[j] = Math.Atan2(SinSpectrum![j], CosSpectrum![j]);
+                result[j] = Math.Atan2(CosSpectrum![j], SinSpectrum![j]);
             }
 
-            return values;
+            return result;
         }
 
         public double[] ComputeRestoredSignal(int N, int k)
@@ -113,14 +114,14 @@ namespace DSP_lab2
             double[] values = new double[k];
             for (int i = 0; i < k; i++)
             {
-                double val = 0;
-                for (int j = 1; j < k / 2; j++)
+                double value = 0;
+                for (int j = 0; j < k / 2; j++)
                 {
-                    val += AmplitudeSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k - PhaseSpectrum![j]);
+                    value += CosSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k) +  SinSpectrum![j] * Math.Sin(2 * Math.PI * i * j / k);
+                    //value += AmplitudeSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k - PhaseSpectrum![j]);
                 }
 
-                val += AmplitudeSpectrum![0] / 2;
-                values[i] = val;
+                values[i] = value;
             }
 
             return values;

@@ -185,7 +185,7 @@ namespace DSP_lab2
 
                         (_, ResultingY) = ComputeResultingSignal();
                     }
-                }, (obj) => SelectedSignal != null);
+                }, (obj) => SelectedSignal != null && Signals.Count > 0);
             }
         }
 
