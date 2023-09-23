@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScottPlot;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DSP_lab2
 {
-    class DiscreteFourierTransformation : INotifyPropertyChanged
+    class DFTVewModel : INotifyPropertyChanged
     {
         private const double Threshold = 0.0001;
 
@@ -20,6 +21,9 @@ namespace DSP_lab2
             {
                 k = value;
                 OnPropertyChanged(nameof(K));
+
+                ExecuteDFT();
+                DrawCharts();
             }
         }
 
@@ -30,9 +34,30 @@ namespace DSP_lab2
         public double[] PhaseSpectrum { get; private set; }
         public double[] RestoredSignal { get; private set; }
 
-        public DiscreteFourierTransformation()
+        public WpfPlot SignalsPlot { get; set; }
+        public WpfPlot AmplitudePlot { get; set; }
+        public WpfPlot PhasePlot { get; set; }
+
+        public DFTVewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
             k = 64;
+
+            SignalsPlot = signalsPlot;
+            PhasePlot = phasePlot;
+            AmplitudePlot = amplitudePlot;
+
+            ExecuteDFT();
+            DrawCharts();
+        }
+
+        public void ExecuteDFT()
+        {
+            SinSpectrum = ComputeSinSpectrum();
+            CosSpectrum = ComputeCosSpectrum();
+
+            AmplitudeSpectrum = ComputeAmplitudeSpectrum();
+            PhaseSpectrum = ComputePhaseSpectrum();
+            RestoredSignal = ComputeRestoredSignal();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

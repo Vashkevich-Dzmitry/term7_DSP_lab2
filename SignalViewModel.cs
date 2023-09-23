@@ -84,6 +84,8 @@ namespace DSP_lab2
                 OnPropertyChanged(nameof(resultingSignal));
 
                 DrawCharts();
+                DFT.ExecuteDFT();
+                DFT.DrawCharts();
             }
         }
 
@@ -167,7 +169,7 @@ namespace DSP_lab2
             }
         }
 
-        public DiscreteFourierTransformation DFT { get; set; }
+        public DFTVewModel DFT { get; set; }
 
         public SignalViewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
@@ -180,13 +182,14 @@ namespace DSP_lab2
                 new SineSignal(0, 1, N, 1),
             };
 
-            DFT = new DiscreteFourierTransformation();
-
             SignalsPlot = signalsPlot;
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
 
             resultingSignal = ComputeResultingSignal();
+
+            DFT = new DFTVewModel(signalsPlot, phasePlot, amplitudePlot);
+
             DrawCharts();
         }
 
