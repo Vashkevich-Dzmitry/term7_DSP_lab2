@@ -17,10 +17,30 @@ namespace DSP_lab2
             get => n;
             set
             {
-                n = value;
-                RegenerateSignals();
-                OnPropertyChanged(nameof(N));
-                ResultingSignal = ComputeResultingSignal();
+                if (value >= k)
+                {
+                    n = value;
+                    OnPropertyChanged(nameof(N));
+                    RegenerateSignals();
+                    (ResultingX, ResultingY) = ComputeResultingSignal();
+                }
+            }
+        }
+
+        private int k;
+        public int K
+        {
+            get => k;
+            set
+            {
+                if (value <= N)
+                {
+                    k = value;
+                    OnPropertyChanged(nameof(K));
+
+                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
+                    DrawCharts();
+                }
             }
         }
 
@@ -42,7 +62,10 @@ namespace DSP_lab2
                 {
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged -= (object? sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
+                        selectedSignal.PropertyChanged -= (object? sender, PropertyChangedEventArgs args) =>
+                        {
+                            (ResultingX, ResultingY) = ComputeResultingSignal();
+                        };
                     }
 
                     selectedSignal = value;
@@ -50,9 +73,12 @@ namespace DSP_lab2
 
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged += (object? sender, PropertyChangedEventArgs args) => { ResultingSignal = ComputeResultingSignal(); };
+                        selectedSignal.PropertyChanged += (object? sender, PropertyChangedEventArgs args) =>
+                        {
+                            (ResultingX, ResultingY) = ComputeResultingSignal();
+                        };
                     }
-                    
+
                     OnPropertyChanged(nameof(SelectedSignal));
                 }
             }
@@ -67,29 +93,51 @@ namespace DSP_lab2
                 if (isSignalSelected != value)
                 {
                     isSignalSelected = value;
-                    OnPropertyChanged(nameof(isSignalSelected));
+                    OnPropertyChanged(nameof(IsSignalSelected));
                 }
             }
         }
 
         public ObservableCollection<GeneratedSignal> Signals { get; set; }
 
-        private ObservableCollection<(double x, double y)> resultingSignal;
-        public ObservableCollection<(double x, double y)> ResultingSignal
+        private ObservableCollection<double> resultingY;
+        public ObservableCollection<double> ResultingY
         {
-            get => resultingSignal;
+            get => resultingY;
             set
             {
-                resultingSignal = value;
-                OnPropertyChanged(nameof(resultingSignal));
+                resultingY = value;
+                OnPropertyChanged(nameof(ResultingY));
 
+                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
                 DrawCharts();
-                DFT.ExecuteDFT();
-                DFT.DrawCharts();
             }
         }
 
-        public ObservableCollection<(double x, double y)> ComputeResultingSignal()
+
+        private ObservableCollection<double> resultingX;
+        public ObservableCollection<double> ResultingX
+        {
+            get => resultingX;
+            set
+            {
+                resultingX = value;
+                OnPropertyChanged(nameof(ResultingX));
+            }
+        }
+
+        private ObservableCollection<double> restoredY;
+        public ObservableCollection<double> RestoredY
+        {
+            get => restoredY;
+            set
+            {
+                restoredY = value;
+                OnPropertyChanged(nameof(RestoredY));
+            }
+        }
+
+        public (ObservableCollection<double> x, ObservableCollection<double> y) ComputeResultingSignal()
         {
             ConcurrentBag<(double x, double y)> concurrentResult = new();
 
@@ -99,7 +147,8 @@ namespace DSP_lab2
                     concurrentResult.Add(((double)group.Key, (double)group.Sum(point => point.Y)));
                 });
 
-            return new ObservableCollection<(double x, double y)>(concurrentResult.OrderBy(item => item.x));
+            return (new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.x)),
+                new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.y)));
         }
 
         public WpfPlot SignalsPlot { get; set; }
@@ -118,7 +167,7 @@ namespace DSP_lab2
                     Signals.Insert(0, signal);
                     SelectedSignal = signal;
 
-                    ResultingSignal = ComputeResultingSignal();
+                    (_, ResultingY) = ComputeResultingSignal();
                 }, (obj) => Signals.Count < 5);
             }
         }
@@ -134,7 +183,7 @@ namespace DSP_lab2
                         Signals.Remove(signal);
                         SelectedSignal = null;
 
-                        ResultingSignal = ComputeResultingSignal();
+                        (_, ResultingY) = ComputeResultingSignal();
                     }
                 }, (obj) => SelectedSignal != null);
             }
@@ -163,7 +212,7 @@ namespace DSP_lab2
                         SelectedSignal = Signals[signalIndex];
                         Signals.RemoveAt(signalIndex + 1);
 
-                        ResultingSignal = ComputeResultingSignal();
+                        (_, ResultingY) = ComputeResultingSignal();
                     }
                 }, (obj) => SelectedSignal != null && obj != null);
             }
@@ -174,6 +223,7 @@ namespace DSP_lab2
         public SignalViewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
             n = 128;
+            k = 64;
 
             Signals = new ObservableCollection<GeneratedSignal>
             {
@@ -186,18 +236,20 @@ namespace DSP_lab2
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
 
-            resultingSignal = ComputeResultingSignal();
+            (resultingX, resultingY) = ComputeResultingSignal();
 
-            DFT = new DFTVewModel(signalsPlot, phasePlot, amplitudePlot);
+            DFT = new DFTVewModel(phasePlot, amplitudePlot);
+            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
 
             DrawCharts();
         }
 
-        private void DrawCharts() //переделать на рисование всех графиков по очереди, вынести рисование каждого в отдельную
+        private void DrawCharts()
         {
             SignalsPlot.Plot.Clear();
             SignalsPlot.Plot.SetAxisLimits(xMin: 0, xMax: 1);
-            SignalsPlot.Plot.AddScatter(ResultingSignal.Select(point => point.x).ToArray(), ResultingSignal.Select(point => point.y).ToArray(), System.Drawing.Color.LightGreen, 5);
+            SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), ResultingY.ToArray(), System.Drawing.Color.LightGreen, 7);
+            SignalsPlot.Plot.AddScatter(GetKElementsFromN(ResultingX), RestoredY.ToArray(), System.Drawing.Color.Red, 3);
             SignalsPlot.Refresh();
         }
 
@@ -205,6 +257,21 @@ namespace DSP_lab2
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private double[] GetKElementsFromN(ObservableCollection<double> doubles)
+        {
+            double[] result = new double[k];
+
+            int step = (N - 1) / (k - 1);
+
+            for (int i = 0; i < k; i++)
+            {
+                // Выбираем элемент из исходного массива
+                result[i] = doubles[i * step];
+            }
+
+            return result;
         }
     }
 }

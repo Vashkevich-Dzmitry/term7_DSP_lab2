@@ -38,7 +38,7 @@ namespace DSP_lab2.Signals
             {
                 n = value;
                 Generate(phi0, a, f, n, d);
-                OnPropertyChanged(nameof(N));
+                //OnPropertyChanged(nameof(N));
             }
         }
         public float A
