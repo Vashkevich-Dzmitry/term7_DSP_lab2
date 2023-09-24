@@ -3,7 +3,7 @@ using System.Windows.Markup;
 
 namespace DSP_lab2.Helpers
 {
-    class EnumBindingSourceExtension : MarkupExtension
+    public class EnumBindingSourceExtension : MarkupExtension
     {
         public Type EnumType { get; private set; }
 

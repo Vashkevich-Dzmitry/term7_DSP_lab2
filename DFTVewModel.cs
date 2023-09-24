@@ -1,48 +1,47 @@
 ﻿using ScottPlot;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DSP_lab2
 {
     class DFTVewModel : INotifyPropertyChanged
     {
-        //private const double Threshold = 0.0001;
-
         public WpfPlot AmplitudePlot { get; set; }
         public WpfPlot PhasePlot { get; set; }
 
-        public ObservableCollection<double>? SinSpectrum { get; private set; }
-        public ObservableCollection<double>? CosSpectrum { get; private set; }
-        public ObservableCollection<double>? AmplitudeSpectrum { get; private set; }
-        public ObservableCollection<double>? PhaseSpectrum { get; private set; }
+        public double[]? SinSpectrum { get; private set; }
+        public double[]? CosSpectrum { get; private set; }
+        public double[]? AmplitudeSpectrum { get; private set; }
+        public double[]? PhaseSpectrum { get; private set; }
+
+        public ObservableCollection<Complex> ComplexValues { get; set; }
 
         public DFTVewModel(WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
+            ComplexValues = new ObservableCollection<Complex>();
         }
 
-        public double[] ExecuteDFT(double[] values, int N, int k)
+        public double[] ExecuteDFT(double[] values, int k)
         {
-            SinSpectrum = new(ComputeSinSpectrum(values, k));
-            CosSpectrum = new(ComputeCosSpectrum(values, k));
+            SinSpectrum = ComputeSinSpectrum(values, k);
+            CosSpectrum = ComputeCosSpectrum(values, k);
 
-            AmplitudeSpectrum = new(ComputeAmplitudeSpectrum(k));
-            PhaseSpectrum = new(ComputePhaseSpectrum(k));
+            AmplitudeSpectrum = ComputeAmplitudeSpectrum(k);
+            PhaseSpectrum = ComputePhaseSpectrum(k);
 
+            DisplayComplexValues(k);
             DrawCharts();
 
-            return ComputeRestoredSignal(N, k);
+            return ComputeRestoredSignal(k);
         }
 
         public void DrawCharts()
-        {
+        { 
             PhasePlot.Plot.Clear();
             PhasePlot.Plot.AddBar(PhaseSpectrum!.ToArray(), System.Drawing.Color.LightGreen);
             PhasePlot.Refresh();
@@ -50,6 +49,16 @@ namespace DSP_lab2
             AmplitudePlot.Plot.Clear();
             AmplitudePlot.Plot.AddBar(AmplitudeSpectrum!.ToArray(), System.Drawing.Color.LightGreen);
             AmplitudePlot.Refresh();
+        }
+
+        public void DisplayComplexValues(int k)
+        {
+            ComplexValues.Clear();
+
+            for (int i = 0; i < k / 2; i++)
+            {
+                ComplexValues.Add(new Complex(CosSpectrum![i], SinSpectrum![i]));
+            }
         }
 
         public static double[] ComputeSinSpectrum(double[] values, int k) //Im
@@ -102,14 +111,13 @@ namespace DSP_lab2
             double[] result = new double[k / 2];
             for (int j = 0; j < k / 2; j++)
             {
-                //result[j] = Math.Atan2(SinSpectrum![j], CosSpectrum![j]);
-                result[j] = Math.Atan2(CosSpectrum![j], SinSpectrum![j]);
+                result[j] = Math.Atan2(SinSpectrum![j], CosSpectrum![j]);
             }
 
             return result;
         }
 
-        public double[] ComputeRestoredSignal(int N, int k)
+        public double[] ComputeRestoredSignal(int k)
         {
             double[] values = new double[k];
             for (int i = 0; i < k; i++)
@@ -117,8 +125,7 @@ namespace DSP_lab2
                 double value = 0;
                 for (int j = 0; j < k / 2; j++)
                 {
-                    value += CosSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k) +  SinSpectrum![j] * Math.Sin(2 * Math.PI * i * j / k);
-                    //value += AmplitudeSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k - PhaseSpectrum![j]);
+                    value += AmplitudeSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k - PhaseSpectrum![j]);
                 }
 
                 values[i] = value;

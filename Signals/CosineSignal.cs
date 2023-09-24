@@ -3,12 +3,12 @@ using System.Drawing;
 
 namespace DSP_lab2.Signals
 {
-    class SineSignal : GeneratedSignal
+    class CosSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Sine;
+        public override SignalTypes SignalType { get; set; } = SignalTypes.Cosine;
         public override PointF[] Points { get; set; }
 
-        public SineSignal(float phi0, float f, int n, float a) : base(phi0, f, n, a)
+        public CosSignal(float phi0, float f, int n, float a) : base(phi0, f, n, a)
         {
             Points = Generate(phi0, a, f, n);
         }
@@ -19,7 +19,7 @@ namespace DSP_lab2.Signals
             for (int n = 0; n < N; n++)
             {
                 Points[n].X = n / (float)N;
-                Points[n].Y = (float)Math.Round(A * Math.Sin(2 * Math.PI * f * n / N + phi0), 3);
+                Points[n].Y = (float)Math.Round(A * Math.Cos(2 * Math.PI * f * n / N + phi0), 3);
             }
 
             return Points;

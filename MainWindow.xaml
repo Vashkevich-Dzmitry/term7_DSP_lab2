@@ -9,7 +9,10 @@
         xmlns:helpers="clr-namespace:DSP_lab2.Helpers"
         mc:Ignorable="d"
         Title="Digital Signal Processing" Height="1080" Width="1920" WindowState="Maximized" FontSize="20" Icon="/dsp_icon.png">
-    <Grid>
+    <Window.Resources>
+        <helpers:DValuePanelVisibilityConverter x:Key="DValuePanelVisibilityConverter"/>
+    </Window.Resources>
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
@@ -71,13 +74,13 @@
                     <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="0, 5" DockPanel.Dock="Top">
                         <Label DockPanel.Dock="Left" Width="40" VerticalAlignment="Center">f:</Label>
                         <Label Content="{Binding ElementName=FValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-                        <Slider Name="FValue" DockPanel.Dock="Right" Maximum="10" Minimum="0.5" TickPlacement="Both" TickFrequency="0.5" Value="{Binding SelectedSignal.F}" IsSnapToTickEnabled="True" Margin="10, 0"/>
+                        <Slider Name="FValue" DockPanel.Dock="Right" Maximum="32" Minimum="1" TickPlacement="Both" TickFrequency="1" Value="{Binding SelectedSignal.F}" IsSnapToTickEnabled="True" Margin="10, 0"/>
                     </DockPanel>
                     
                     <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="0, 5" DockPanel.Dock="Top">
                         <Label DockPanel.Dock="Left" Width="40" VerticalAlignment="Center">A:</Label>
                         <Label Content="{Binding ElementName=AValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-                        <Slider Value="{Binding SelectedSignal.A}" Name="AValue" DockPanel.Dock="Right" SmallChange="1" LargeChange="1" Maximum="10" Minimum="1" TickPlacement="Both" TickFrequency="1" IsSnapToTickEnabled="True" Margin="10, 0"/>
+                        <Slider Value="{Binding SelectedSignal.A}" Name="AValue" DockPanel.Dock="Right" SmallChange="1" LargeChange="1" Maximum="16" Minimum="1" TickPlacement="Both" TickFrequency="1" IsSnapToTickEnabled="True" Margin="10, 0"/>
                     </DockPanel>
                     
                     <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="0, 5" DockPanel.Dock="Top">
@@ -85,8 +88,8 @@
                         <Label Content="{Binding ElementName=Phi0Value, Path=Value, UpdateSourceTrigger=PropertyChanged}" ContentStringFormat="{}{0:F2}" DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
                         <Slider Value="{Binding SelectedSignal.Phi0}" Name="Phi0Value" DockPanel.Dock="Right" SmallChange="0.785" LargeChange="1.57" Maximum="6.28" Minimum="-6.28" TickPlacement="Both" TickFrequency="0.785" IsSnapToTickEnabled="True" Margin="10, 0"/>
                     </DockPanel>
-                    
-                    <DockPanel Name="DutyCyclePanel" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Visibility="Collapsed" Margin="5" DockPanel.Dock="Top">
+
+                    <DockPanel Grid.Column="1" Grid.Row="2" Visibility="{Binding SelectedSignal.D, Converter={StaticResource DValuePanelVisibilityConverter}}" VerticalAlignment="Center" Margin="5" DockPanel.Dock="Top">
                         <Label DockPanel.Dock="Left" Width="40" VerticalAlignment="Center">d:</Label>
                         <Label Content="{Binding ElementName=DValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" ContentStringFormat="{}{0:F2}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
                         <Slider Value="{Binding SelectedSignal.D, TargetNullValue=0}" Name="DValue" DockPanel.Dock="Right" Maximum="1" Minimum="0" TickPlacement="Both" TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="10, 0"/>
@@ -95,18 +98,14 @@
             </Expander>
             
 
-            <!--
             <DockPanel>
-                <DataGrid x:Name="XYValuesGrid" AutoGenerateColumns="False" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True" MaxHeight="480" Margin="10">
+                <DataGrid x:Name="ComplexValuesGrid" ItemsSource="{Binding DFT.ComplexValues}" AutoGenerateColumns="False" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True" MaxHeight="480" Margin="10">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="X" Binding="{Binding X}" Width="*" />
-                        <DataGridTextColumn Header="Y" Binding="{Binding Y}" Width="*" />
-                        <DataGridTextColumn Header="X*" Binding="{Binding X}" Width="*" />
-                        <DataGridTextColumn Header="Y*" Binding="{Binding Y}" Width="*" />
+                        <DataGridTextColumn Header="Re" Binding="{Binding Real, StringFormat='F4'}" Width="*" />
+                        <DataGridTextColumn Header="Im" Binding="{Binding Imaginary, StringFormat='F4'}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
-            -->
         </StackPanel>
 
         
@@ -116,16 +115,17 @@
          -->
         <WpfPlot Name="AmplitudePlot" Grid.Column="1" Grid.Row="1" Margin="15"/>
         <WpfPlot Name="PhasePlot" Grid.Column="2" Grid.Row="1" Margin="15"/>
+            
         <DockPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Top" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">N:</Label>
             <Label Content="{Binding ElementName=NValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-            <Slider Name="NValue" DockPanel.Dock="Right" SmallChange="4" LargeChange="128" Maximum="256" Minimum="4" TickPlacement="Both" Ticks="4, 8, 16, 32, 64, 128, 256" Value="{Binding N}" IsSnapToTickEnabled="True" Margin="10, 0"/>
+            <Slider Name="NValue" DockPanel.Dock="Right" SmallChange="4" LargeChange="512" Maximum="1024" Minimum="4" TickPlacement="Both" Ticks="4, 8, 16, 32, 64, 128, 256, 512, 1024" Value="{Binding N}" IsSnapToTickEnabled="True" Margin="10, 0"/>
         </DockPanel>
         
         <DockPanel Grid.Column="2" Grid.Row="2" VerticalAlignment="Top" Margin="50, 10">
             <Label DockPanel.Dock="Left"  VerticalAlignment="Center">k:</Label>
             <Label Content="{Binding ElementName=KValue, Path=Value, UpdateSourceTrigger=PropertyChanged}"  DockPanel.Dock="Right" Width="80" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
-            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="2" LargeChange="128" Maximum="256" Minimum="2" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256" Value="{Binding K}" IsSnapToTickEnabled="True" Margin="10, 0"/>
+            <Slider Name="KValue" DockPanel.Dock="Right" SmallChange="4" LargeChange="512" Maximum="1024" Minimum="4" TickPlacement="Both" Ticks="2, 4, 8, 16, 32, 64, 128, 256, 512, 1024" Value="{Binding K}" IsSnapToTickEnabled="True" Margin="10, 0"/>
         </DockPanel>
     </Grid>
 </Window>

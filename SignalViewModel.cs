@@ -38,7 +38,7 @@ namespace DSP_lab2
                     k = value;
                     OnPropertyChanged(nameof(K));
 
-                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
+                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
                     DrawCharts();
                 }
             }
@@ -109,7 +109,7 @@ namespace DSP_lab2
                 resultingY = value;
                 OnPropertyChanged(nameof(ResultingY));
 
-                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
+                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
                 DrawCharts();
             }
         }
@@ -163,7 +163,7 @@ namespace DSP_lab2
             {
                 return addCommand ??= new RelayCommand(obj =>
                 {
-                    GeneratedSignal signal = new SineSignal(0, 1, N, 1);
+                    GeneratedSignal signal = new CosSignal(0, 1, N, 1);
                     Signals.Insert(0, signal);
                     SelectedSignal = signal;
 
@@ -204,7 +204,7 @@ namespace DSP_lab2
                             SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                             SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                             SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A, 0.5f),
-                            _ => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
+                            _ => new CosSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                         };
 
                         int signalIndex = Signals.IndexOf(SelectedSignal);
@@ -227,9 +227,9 @@ namespace DSP_lab2
 
             Signals = new ObservableCollection<GeneratedSignal>
             {
-                new SineSignal(0, 1, N, 1),
-                new SineSignal(0, 1, N, 1),
-                new SineSignal(0, 1, N, 1),
+                new CosSignal(0, 1, N, 1),
+                new CosSignal(0, 1, N, 1),
+                new CosSignal(0, 1, N, 1),
             };
 
             SignalsPlot = signalsPlot;
@@ -239,7 +239,7 @@ namespace DSP_lab2
             (resultingX, resultingY) = ComputeResultingSignal();
 
             DFT = new DFTVewModel(phasePlot, amplitudePlot);
-            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), N, K));
+            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
 
             DrawCharts();
         }
