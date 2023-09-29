@@ -204,6 +204,7 @@ namespace DSP_lab2
                             SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                             SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                             SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A, 0.5f),
+                            SignalTypes.Sine => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                             _ => new CosSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
                         };
 

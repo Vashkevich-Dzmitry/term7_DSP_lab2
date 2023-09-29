@@ -3,6 +3,7 @@
     public enum SignalTypes
     {
         Cosine,
+        Sine,
         Triangle,
         Sawtooth,
         Pulse
