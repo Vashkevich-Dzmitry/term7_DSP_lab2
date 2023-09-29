@@ -38,7 +38,7 @@ namespace DSP_lab2
                     k = value;
                     OnPropertyChanged(nameof(K));
 
-                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
+                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
                     DrawCharts();
                 }
             }
@@ -109,7 +109,7 @@ namespace DSP_lab2
                 resultingY = value;
                 OnPropertyChanged(nameof(ResultingY));
 
-                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
+                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
                 DrawCharts();
             }
         }
@@ -142,6 +142,19 @@ namespace DSP_lab2
             ConcurrentBag<(double x, double y)> concurrentResult = new();
 
             Parallel.ForEach(Signals.SelectMany(signal => signal.Points).GroupBy(point => point.X),
+                group =>
+                {
+                    concurrentResult.Add(((double)group.Key, (double)group.Sum(point => point.Y)));
+                });
+
+            return (new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.x)),
+                new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.y)));
+        }
+        public (ObservableCollection<double> x, ObservableCollection<double> y) ComputeResultingSignal(int K)
+        {
+            ConcurrentBag<(double x, double y)> concurrentResult = new();
+
+            Parallel.ForEach(Signals.SelectMany(signal => signal.Generate(signal.Phi0, signal.A, signal.F, K, signal.D)).GroupBy(point => point.X),
                 group =>
                 {
                     concurrentResult.Add(((double)group.Key, (double)group.Sum(point => point.Y)));
@@ -228,9 +241,7 @@ namespace DSP_lab2
 
             Signals = new ObservableCollection<GeneratedSignal>
             {
-                new CosSignal(0, 1, N, 1),
-                new CosSignal(0, 1, N, 1),
-                new CosSignal(0, 1, N, 1),
+                new SineSignal(0, 1, N, 1)
             };
 
             SignalsPlot = signalsPlot;
@@ -240,7 +251,7 @@ namespace DSP_lab2
             (resultingX, resultingY) = ComputeResultingSignal();
 
             DFT = new DFTVewModel(phasePlot, amplitudePlot);
-            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K));
+            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
 
             DrawCharts();
         }
@@ -250,7 +261,7 @@ namespace DSP_lab2
             SignalsPlot.Plot.Clear();
             SignalsPlot.Plot.SetAxisLimits(xMin: 0, xMax: 1);
             SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), ResultingY.ToArray(), System.Drawing.Color.LightGreen, 7);
-            SignalsPlot.Plot.AddScatter(GetKElementsFromN(ResultingX), RestoredY.ToArray(), System.Drawing.Color.Red, 3);
+            SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), RestoredY.ToArray(), System.Drawing.Color.Red, 3);
             SignalsPlot.Refresh();
         }
 
@@ -262,17 +273,8 @@ namespace DSP_lab2
 
         private double[] GetKElementsFromN(ObservableCollection<double> doubles)
         {
-            double[] result = new double[k];
-
-            int step = (N - 1) / (k - 1);
-
-            for (int i = 0; i < k; i++)
-            {
-                // Выбираем элемент из исходного массива
-                result[i] = doubles[i * step];
-            }
-
-            return result;
+            (_, ObservableCollection < double> y) = ComputeResultingSignal(K);
+            return y.ToArray();
         }
     }
 }

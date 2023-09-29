@@ -19,7 +19,7 @@ namespace DSP_lab2.Signals
             for (int n = 0; n < N; n++)
             {
                 Points[n].X = n / (float)N;
-                Points[n].Y = (float)Math.Round((A / Math.PI) * (2 * Math.PI * f * n / N + phi0 - Math.PI + 2 * Math.PI) % (2 * Math.PI) - A, 3);
+                Points[n].Y = (float)Math.Round((A / Math.PI) * ((2 * Math.PI * f * n / N + phi0 - Math.PI + 2 * Math.PI) % (2 * Math.PI)) - A, 3);
             }
 
             return Points;

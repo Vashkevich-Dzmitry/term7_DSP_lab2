@@ -26,7 +26,7 @@ namespace DSP_lab2
             ComplexValues = new ObservableCollection<Complex>();
         }
 
-        public double[] ExecuteDFT(double[] values, int k)
+        public double[] ExecuteDFT(double[] values, int k, int N)
         {
             SinSpectrum = ComputeSinSpectrum(values, k);
             CosSpectrum = ComputeCosSpectrum(values, k);
@@ -37,7 +37,7 @@ namespace DSP_lab2
             DisplayComplexValues(k);
             DrawCharts();
 
-            return ComputeRestoredSignal(k);
+            return ComputeRestoredSignal(k, N);
         }
 
         public void DrawCharts()
@@ -63,8 +63,8 @@ namespace DSP_lab2
 
         public static double[] ComputeSinSpectrum(double[] values, int k) //Im
         {
-            double[] result = new double[k / 2];
-            for (int j = 0; j < k / 2; j++)
+            double[] result = new double[k];
+            for (int j = 0; j < k; j++)
             {
                 double value = 0;
                 for (int i = 0; i < k; i++)
@@ -80,8 +80,8 @@ namespace DSP_lab2
 
         public static double[] ComputeCosSpectrum(double[] values, int k) //Re
         {
-            double[] result = new double[k / 2];
-            for (int j = 0; j < k / 2; j++)
+            double[] result = new double[k];
+            for (int j = 0; j < k; j++)
             {
                 double value = 0;
                 for (int i = 0; i < k; i++)
@@ -97,8 +97,8 @@ namespace DSP_lab2
 
         public double[] ComputeAmplitudeSpectrum(int k)
         {
-            double[] result = new double[k / 2];
-            for (int j = 0; j < k / 2; j++)
+            double[] result = new double[k];
+            for (int j = 0; j < k; j++)
             {
                 result[j] = Math.Sqrt(Math.Pow(SinSpectrum![j], 2) + Math.Pow(CosSpectrum![j], 2));
             }
@@ -108,24 +108,24 @@ namespace DSP_lab2
 
         public double[] ComputePhaseSpectrum(int k)
         {
-            double[] result = new double[k / 2];
-            for (int j = 0; j < k / 2; j++)
+            double[] result = new double[k];
+            for (int j = 0; j < k; j++)
             {
-                result[j] = Math.Atan2(SinSpectrum![j], CosSpectrum![j]);
+                result[j] = Math.Atan2(CosSpectrum![j], SinSpectrum![j]);
             }
 
             return result;
         }
 
-        public double[] ComputeRestoredSignal(int k)
+        public double[] ComputeRestoredSignal(int k, int N)
         {
-            double[] values = new double[k];
-            for (int i = 0; i < k; i++)
+            double[] values = new double[N];
+            for (int i = 0; i < N; i++)
             {
-                double value = 0;
+                double value = AmplitudeSpectrum![0] / 2;
                 for (int j = 0; j < k / 2; j++)
                 {
-                    value += AmplitudeSpectrum![j] * Math.Cos(2 * Math.PI * i * j / k - PhaseSpectrum![j]);
+                    value += AmplitudeSpectrum![j] * Math.Sin(2 * Math.PI * i * j / N + PhaseSpectrum![j]);
                 }
 
                 values[i] = value;

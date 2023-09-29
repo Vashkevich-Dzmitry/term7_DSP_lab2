@@ -101,8 +101,8 @@
             <DockPanel>
                 <DataGrid x:Name="ComplexValuesGrid" ItemsSource="{Binding DFT.ComplexValues}" AutoGenerateColumns="False" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True" MaxHeight="480" Margin="10">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Re" Binding="{Binding Real, StringFormat='F4'}" Width="*" />
-                        <DataGridTextColumn Header="Im" Binding="{Binding Imaginary, StringFormat='F4'}" Width="*" />
+                        <DataGridTextColumn Header="Re" Binding="{Binding Real, StringFormat='F5'}" Width="*" />
+                        <DataGridTextColumn Header="Im" Binding="{Binding Imaginary, StringFormat='F5'}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
