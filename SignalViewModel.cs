@@ -21,8 +21,8 @@ namespace DSP_lab2
                 {
                     n = value;
                     OnPropertyChanged(nameof(N));
-                    RegenerateSignals();
-                    (ResultingX, ResultingY) = ComputeResultingSignal();
+
+                    (ResultingX, ResultingY) = ComputeResultingSignal(N);
                 }
             }
         }
@@ -39,16 +39,7 @@ namespace DSP_lab2
                     OnPropertyChanged(nameof(K));
 
                     RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
-                    DrawCharts();
                 }
-            }
-        }
-
-        private void RegenerateSignals()
-        {
-            foreach (var signal in Signals)
-            {
-                signal.N = N;
             }
         }
 
@@ -64,7 +55,7 @@ namespace DSP_lab2
                     {
                         selectedSignal.PropertyChanged -= (object? sender, PropertyChangedEventArgs args) =>
                         {
-                            (ResultingX, ResultingY) = ComputeResultingSignal();
+                            (ResultingX, ResultingY) = ComputeResultingSignal(N);
                         };
                     }
 
@@ -75,11 +66,25 @@ namespace DSP_lab2
                     {
                         selectedSignal.PropertyChanged += (object? sender, PropertyChangedEventArgs args) =>
                         {
-                            (ResultingX, ResultingY) = ComputeResultingSignal();
+                            (ResultingX, ResultingY) = ComputeResultingSignal(N);
                         };
                     }
 
                     OnPropertyChanged(nameof(SelectedSignal));
+                }
+            }
+        }
+
+        private bool isComplexVisible;
+        public bool IsComplexVisible
+        {
+            get => isComplexVisible;
+            set
+            {
+                if (isComplexVisible != value)
+                {
+                    isComplexVisible = value;
+                    OnPropertyChanged(nameof(IsComplexVisible));
                 }
             }
         }
@@ -137,24 +142,11 @@ namespace DSP_lab2
             }
         }
 
-        public (ObservableCollection<double> x, ObservableCollection<double> y) ComputeResultingSignal()
+        public (ObservableCollection<double> x, ObservableCollection<double> y) ComputeResultingSignal(int pointsAmount)
         {
             ConcurrentBag<(double x, double y)> concurrentResult = new();
 
-            Parallel.ForEach(Signals.SelectMany(signal => signal.Points).GroupBy(point => point.X),
-                group =>
-                {
-                    concurrentResult.Add(((double)group.Key, (double)group.Sum(point => point.Y)));
-                });
-
-            return (new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.x)),
-                new ObservableCollection<double>(concurrentResult.OrderBy(item => item.x).Select(item => item.y)));
-        }
-        public (ObservableCollection<double> x, ObservableCollection<double> y) ComputeResultingSignal(int K)
-        {
-            ConcurrentBag<(double x, double y)> concurrentResult = new();
-
-            Parallel.ForEach(Signals.SelectMany(signal => signal.Generate(signal.Phi0, signal.A, signal.F, K, signal.D)).GroupBy(point => point.X),
+            Parallel.ForEach(Signals.SelectMany(signal => signal.Generate(signal.Phi0, signal.A, signal.F, pointsAmount, signal.D)).GroupBy(point => point.X),
                 group =>
                 {
                     concurrentResult.Add(((double)group.Key, (double)group.Sum(point => point.Y)));
@@ -176,11 +168,11 @@ namespace DSP_lab2
             {
                 return addCommand ??= new RelayCommand(obj =>
                 {
-                    GeneratedSignal signal = new CosSignal(0, 1, N, 1);
+                    GeneratedSignal signal = new SineSignal(0, 1, 1);
                     Signals.Insert(0, signal);
                     SelectedSignal = signal;
 
-                    (_, ResultingY) = ComputeResultingSignal();
+                    (_, ResultingY) = ComputeResultingSignal(N);
                 }, (obj) => Signals.Count < 5);
             }
         }
@@ -196,9 +188,9 @@ namespace DSP_lab2
                         Signals.Remove(signal);
                         SelectedSignal = null;
 
-                        (_, ResultingY) = ComputeResultingSignal();
+                        (_, ResultingY) = ComputeResultingSignal(N);
                     }
-                }, (obj) => SelectedSignal != null && Signals.Count > 0);
+                }, (obj) => SelectedSignal != null && Signals.Count > 1);
             }
         }
 
@@ -214,11 +206,11 @@ namespace DSP_lab2
                     {
                         GeneratedSignal newSignal = signalType switch
                         {
-                            SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
-                            SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
-                            SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A, 0.5f),
-                            SignalTypes.Sine => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
-                            _ => new CosSignal(SelectedSignal!.Phi0, SelectedSignal!.F, N, SelectedSignal!.A),
+                            SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A, 0.5f),
+                            SignalTypes.Sine => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            _ => new CosineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
                         };
 
                         int signalIndex = Signals.IndexOf(SelectedSignal);
@@ -226,7 +218,7 @@ namespace DSP_lab2
                         SelectedSignal = Signals[signalIndex];
                         Signals.RemoveAt(signalIndex + 1);
 
-                        (_, ResultingY) = ComputeResultingSignal();
+                        (_, ResultingY) = ComputeResultingSignal(N);
                     }
                 }, (obj) => SelectedSignal != null && obj != null);
             }
@@ -236,19 +228,20 @@ namespace DSP_lab2
 
         public SignalViewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
+            isComplexVisible = false;
             n = 128;
             k = 64;
 
             Signals = new ObservableCollection<GeneratedSignal>
             {
-                new SineSignal(0, 1, N, 1)
+                new SineSignal(0, 1, 1)
             };
 
             SignalsPlot = signalsPlot;
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
 
-            (resultingX, resultingY) = ComputeResultingSignal();
+            (resultingX, resultingY) = ComputeResultingSignal(N);
 
             DFT = new DFTVewModel(phasePlot, amplitudePlot);
             restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
@@ -260,7 +253,7 @@ namespace DSP_lab2
         {
             SignalsPlot.Plot.Clear();
             SignalsPlot.Plot.SetAxisLimits(xMin: 0, xMax: 1);
-            SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), ResultingY.ToArray(), System.Drawing.Color.LightGreen, 7);
+            SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), ResultingY.ToArray(), System.Drawing.Color.LightGreen, 11);
             SignalsPlot.Plot.AddScatter(ResultingX.ToArray(), RestoredY.ToArray(), System.Drawing.Color.Red, 3);
             SignalsPlot.Refresh();
         }

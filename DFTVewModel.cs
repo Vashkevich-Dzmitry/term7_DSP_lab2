@@ -69,7 +69,7 @@ namespace DSP_lab2
                 double value = 0;
                 for (int i = 0; i < k; i++)
                 {
-                    value += values[i] * Math.Sin(2 * Math.PI * i * j / k);
+                     value += values[i] * Math.Sin(2 * Math.PI * i * j / k);
                 }
 
                 result[j] = 2 * value / k;
