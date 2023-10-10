@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace DSP_lab2
 {
@@ -11,11 +12,6 @@ namespace DSP_lab2
     {
         public WpfPlot AmplitudePlot { get; set; }
         public WpfPlot PhasePlot { get; set; }
-
-        public double[]? SinSpectrum { get; private set; }
-        public double[]? CosSpectrum { get; private set; }
-        public double[]? AmplitudeSpectrum { get; private set; }
-        public double[]? PhaseSpectrum { get; private set; }
 
         public ObservableCollection<Complex> ComplexValues { get; set; }
 
@@ -28,110 +24,74 @@ namespace DSP_lab2
 
         public double[] ExecuteDFT(double[] values, int k, int N)
         {
-            SinSpectrum = ComputeSinSpectrum(values, k);
-            CosSpectrum = ComputeCosSpectrum(values, k);
+            double[] sinSpectrum = new double[k], cosSpectrum = new double[k], amplitudeSpectrum = new double[k], phaseSpectrum = new double[k];
+            double[] restoredValues = new double[N];
+            Complex[] complexes = new Complex[k];
 
-            AmplitudeSpectrum = ComputeAmplitudeSpectrum(k);
-            PhaseSpectrum = ComputePhaseSpectrum(k);
+            Task convertion = new(() =>
+            {
+                Parallel.For(0, k, (i, state) =>
+                {
+                    sinSpectrum[i] = 0;
+                    cosSpectrum[i] = 0;
+                    amplitudeSpectrum[i] = 0;
+                    phaseSpectrum[i] = 0;
 
-            DisplayComplexValues(k);
-            DrawCharts();
+                    Task countComplexes = new(() =>
+                    {
+                        Parallel.For(0, k, (j, state) =>
+                        {
+                            lock (sinSpectrum) sinSpectrum[i] += values[j] * Math.Sin(2 * Math.PI * j * i / k);
+                            lock (cosSpectrum) cosSpectrum[i] += values[j] * Math.Cos(2 * Math.PI * j * i / k);
+                        });
+                    });
 
-            return ComputeRestoredSignal(k, N);
-        }
+                    countComplexes.Start();
+                    countComplexes.Wait();
 
-        public void DrawCharts()
-        { 
+                    sinSpectrum[i] = 2 * sinSpectrum[i] / k;
+                    cosSpectrum[i] = 2 * cosSpectrum[i] / k;
+
+                    complexes[i] = new(cosSpectrum[i], sinSpectrum[i]);
+
+                    amplitudeSpectrum[i] = Math.Sqrt(Math.Pow(sinSpectrum[i], 2) + Math.Pow(cosSpectrum[i], 2));
+                    phaseSpectrum[i] = Math.Atan2(cosSpectrum[i], sinSpectrum[i]);
+
+                });
+            });
+
+            convertion.Start();
+            convertion.Wait();
+
+            ComplexValues.Clear();
+            foreach (Complex complex in complexes) ComplexValues.Add(complex);
+
             PhasePlot.Plot.Clear();
-            PhasePlot.Plot.AddBar(PhaseSpectrum!.ToArray(), System.Drawing.Color.LightGreen);
+            PhasePlot.Plot.AddBar(phaseSpectrum, System.Drawing.Color.LightGreen);
             PhasePlot.Refresh();
 
             AmplitudePlot.Plot.Clear();
-            AmplitudePlot.Plot.AddBar(AmplitudeSpectrum!.ToArray(), System.Drawing.Color.LightGreen);
+            AmplitudePlot.Plot.AddBar(amplitudeSpectrum, System.Drawing.Color.LightGreen);
             AmplitudePlot.Refresh();
-        }
 
-        public void DisplayComplexValues(int k)
-        {
-            ComplexValues.Clear();
-
-            for (int i = 0; i < k / 2; i++)
+            Task restoration = new(() =>
             {
-                ComplexValues.Add(new Complex(CosSpectrum![i], SinSpectrum![i]));
-            }
-        }
-
-        public static double[] ComputeSinSpectrum(double[] values, int k) //Im
-        {
-            double[] result = new double[k];
-            for (int j = 0; j < k; j++)
-            {
-                double value = 0;
-                for (int i = 0; i < k; i++)
+                Parallel.For(0, N, (i, state) =>
                 {
-                     value += values[i] * Math.Sin(2 * Math.PI * i * j / k);
-                }
+                    restoredValues[i] = amplitudeSpectrum[0] / 2;
 
-                result[j] = 2 * value / k;
-            }
+                    Parallel.For(0, k / 2, (j, state) =>
+                    {
+                        lock (restoredValues) restoredValues[i] += amplitudeSpectrum[j] * Math.Sin(2 * Math.PI * i * j / N + phaseSpectrum[j]);
+                    });
 
-            return result;
-        }
+                });
+            });
 
-        public static double[] ComputeCosSpectrum(double[] values, int k) //Re
-        {
-            double[] result = new double[k];
-            for (int j = 0; j < k; j++)
-            {
-                double value = 0;
-                for (int i = 0; i < k; i++)
-                {
-                    value += values[i] * Math.Cos(2 * Math.PI * i * j / k);
-                }
+            restoration.Start();
+            restoration.Wait();
 
-                result[j] = 2 * value / k;
-            }
-
-            return result;
-        }
-
-        public double[] ComputeAmplitudeSpectrum(int k)
-        {
-            double[] result = new double[k];
-            for (int j = 0; j < k; j++)
-            {
-                result[j] = Math.Sqrt(Math.Pow(SinSpectrum![j], 2) + Math.Pow(CosSpectrum![j], 2));
-            }
-
-            return result;
-        }
-
-        public double[] ComputePhaseSpectrum(int k)
-        {
-            double[] result = new double[k];
-            for (int j = 0; j < k; j++)
-            {
-                result[j] = Math.Atan2(CosSpectrum![j], SinSpectrum![j]);
-            }
-
-            return result;
-        }
-
-        public double[] ComputeRestoredSignal(int k, int N)
-        {
-            double[] values = new double[N];
-            for (int i = 0; i < N; i++)
-            {
-                double value = AmplitudeSpectrum![0] / 2;
-                for (int j = 0; j < k / 2; j++)
-                {
-                    value += AmplitudeSpectrum![j] * Math.Sin(2 * Math.PI * i * j / N + PhaseSpectrum![j]);
-                }
-
-                values[i] = value;
-            }
-
-            return values;
+            return restoredValues;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

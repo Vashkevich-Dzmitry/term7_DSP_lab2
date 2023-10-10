@@ -115,7 +115,6 @@ namespace DSP_lab2
                 OnPropertyChanged(nameof(ResultingY));
 
                 RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
-                DrawCharts();
             }
         }
 
@@ -139,6 +138,8 @@ namespace DSP_lab2
             {
                 restoredY = value;
                 OnPropertyChanged(nameof(RestoredY));
+
+                DrawCharts();
             }
         }
 
