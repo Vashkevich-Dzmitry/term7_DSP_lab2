@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DSP_lab2
+namespace DSP_lab2.ViewModels
 {
     class SignalViewModel : INotifyPropertyChanged
     {
@@ -53,7 +53,7 @@ namespace DSP_lab2
                 {
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged -= (object? sender, PropertyChangedEventArgs args) =>
+                        selectedSignal.PropertyChanged -= (sender, args) =>
                         {
                             (ResultingX, ResultingY) = ComputeResultingSignal(N);
                         };
@@ -64,7 +64,7 @@ namespace DSP_lab2
 
                     if (selectedSignal != null)
                     {
-                        selectedSignal.PropertyChanged += (object? sender, PropertyChangedEventArgs args) =>
+                        selectedSignal.PropertyChanged += (sender, args) =>
                         {
                             (ResultingX, ResultingY) = ComputeResultingSignal(N);
                         };

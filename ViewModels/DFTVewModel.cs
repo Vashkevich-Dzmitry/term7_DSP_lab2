@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace DSP_lab2
+namespace DSP_lab2.ViewModels
 {
     class DFTVewModel
     {
