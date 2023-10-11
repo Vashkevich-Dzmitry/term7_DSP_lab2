@@ -1,21 +1,42 @@
-﻿using ScottPlot;
+﻿using DSP_lab2.ViewModels;
+using ScottPlot;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace DSP_lab2.ViewModels
+namespace DSP_lab2
 {
-    class DFTVewModel
+    class DFTViewModel : INotifyPropertyChanged
     {
+        public FiltrationViewModel Filtration { get; set; }
         public WpfPlot AmplitudePlot { get; set; }
         public WpfPlot PhasePlot { get; set; }
 
         public ObservableCollection<Complex> ComplexValues { get; set; }
 
-        public DFTVewModel(WpfPlot phasePlot, WpfPlot amplitudePlot)
+        private bool isComplexesVisible;
+        public bool IsComplexesVisible
         {
+            get => isComplexesVisible;
+            set
+            {
+                if (isComplexesVisible != value)
+                {
+                    isComplexesVisible = value;
+                    OnPropertyChanged(nameof(IsComplexesVisible));
+                }
+            }
+        }
+
+        public DFTViewModel(FiltrationViewModel filtration, WpfPlot phasePlot, WpfPlot amplitudePlot)
+        {
+            isComplexesVisible = false;
+
+            Filtration = filtration;
+
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
             ComplexValues = new ObservableCollection<Complex>();
@@ -27,17 +48,17 @@ namespace DSP_lab2.ViewModels
             double[] restoredValues = new double[N];
             Complex[] complexes = new Complex[k];
 
-            Parallel.For(0, k, (i, state) =>
-            {
-                sinSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Sin(2 * Math.PI * p.j * i / k)) / k;
-                cosSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Cos(2 * Math.PI * p.j * i / k)) / k;
+                Parallel.For(0, k, (i, state) =>
+                {
+                    sinSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Sin(2 * Math.PI * p.j * i / k)) / k;
+                    cosSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Cos(2 * Math.PI * p.j * i / k)) / k;
 
-                complexes[i] = new(cosSpectrum[i], sinSpectrum[i]);
+                    complexes[i] = new(cosSpectrum[i], sinSpectrum[i]);
 
-                amplitudeSpectrum[i] = Math.Sqrt(Math.Pow(sinSpectrum[i], 2) + Math.Pow(cosSpectrum[i], 2));
-                phaseSpectrum[i] = Math.Atan2(cosSpectrum[i], sinSpectrum[i]);
+                    amplitudeSpectrum[i] = Filtration.SelectedFiltration.Filter(i, Math.Sqrt(Math.Pow(sinSpectrum[i], 2) + Math.Pow(cosSpectrum[i], 2)));
+                    phaseSpectrum[i] = Math.Atan2(cosSpectrum[i], sinSpectrum[i]);
 
-            });
+                });
 
             ComplexValues.Clear();
             foreach (Complex complex in complexes) ComplexValues.Add(complex);
@@ -59,6 +80,12 @@ namespace DSP_lab2.ViewModels
             });
 
             return restoredValues;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

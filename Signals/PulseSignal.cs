@@ -5,7 +5,7 @@ namespace DSP_lab2.Signals
 {
     class PulseSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Pulse;
+        public override SignalType Type { get; set; } = SignalType.Pulse;
 
         public PulseSignal(float phi0, float f, float a, float d): base(phi0, f, a)
         {

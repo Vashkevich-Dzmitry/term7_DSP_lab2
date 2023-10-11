@@ -5,7 +5,7 @@ namespace DSP_lab2.Signals
 {
     class CosineSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Cosine;
+        public override SignalType Type { get; set; } = SignalType.Cosine;
 
         public CosineSignal(float phi0, float f, float a) : base(phi0, f, a) { }
 

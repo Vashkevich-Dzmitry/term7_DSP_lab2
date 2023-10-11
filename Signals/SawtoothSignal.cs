@@ -5,7 +5,7 @@ namespace DSP_lab2.Signals
 {
     class SawtoothSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Sawtooth;
+        public override SignalType Type { get; set; } = SignalType.Sawtooth;
 
         public SawtoothSignal(float phi0, float f, float a) : base(phi0, f, a) { }
 

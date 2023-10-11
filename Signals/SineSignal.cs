@@ -5,7 +5,7 @@ namespace DSP_lab2.Signals
 {
     class SineSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Sine;
+        public override SignalType Type { get; set; } = SignalType.Sine;
 
         public SineSignal(float phi0, float f, float a) : base(phi0, f, a) { }
 

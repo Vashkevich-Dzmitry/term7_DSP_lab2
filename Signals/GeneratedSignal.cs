@@ -44,11 +44,11 @@ namespace DSP_lab2.Signals
             set
             {
                 d = value;
-                OnPropertyChanged(nameof(A));
+                OnPropertyChanged(nameof(D));
             }
         }
 
-        public abstract SignalTypes SignalType { get; set; }
+        public abstract SignalType Type { get; set; }
 
         public GeneratedSignal(float phi0, float f, float a)
         {

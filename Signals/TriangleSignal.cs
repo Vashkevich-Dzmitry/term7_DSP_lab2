@@ -5,7 +5,7 @@ namespace DSP_lab2.Signals
 {
     class TriangleSignal : GeneratedSignal
     {
-        public override SignalTypes SignalType { get; set; } = SignalTypes.Triangle;
+        public override SignalType Type { get; set; } = SignalType.Triangle;
 
         public TriangleSignal(float phi0, float f, float a) : base(phi0, f, a) { }
 

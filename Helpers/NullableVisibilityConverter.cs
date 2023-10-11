@@ -6,11 +6,11 @@ using System.Windows.Data;
 namespace DSP_lab2.Helpers
 {
     [ValueConversion(typeof(double?), typeof(Visibility))]
-    public class DValuePanelVisibilityConverter : IValueConverter
+    public class NullableVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value != null ? Visibility.Visible : Visibility.Hidden;
+            return value != null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

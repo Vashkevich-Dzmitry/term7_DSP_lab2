@@ -1,5 +1,6 @@
 ﻿using DSP_lab2.Helpers;
 using DSP_lab2.Signals;
+using DSP_lab2.Filtering;
 using ScottPlot;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -71,20 +72,6 @@ namespace DSP_lab2.ViewModels
                     }
 
                     OnPropertyChanged(nameof(SelectedSignal));
-                }
-            }
-        }
-
-        private bool isComplexVisible;
-        public bool IsComplexVisible
-        {
-            get => isComplexVisible;
-            set
-            {
-                if (isComplexVisible != value)
-                {
-                    isComplexVisible = value;
-                    OnPropertyChanged(nameof(IsComplexVisible));
                 }
             }
         }
@@ -195,22 +182,22 @@ namespace DSP_lab2.ViewModels
             }
         }
 
-        private RelayCommand? changeTypeCommand;
-        public RelayCommand ChangeTypeCommand
+        private RelayCommand? changeSignalTypeCommand;
+        public RelayCommand ChangeSignalTypeCommand
         {
             get
             {
-                return changeTypeCommand ??= new RelayCommand(obj =>
+                return changeSignalTypeCommand ??= new RelayCommand(obj =>
                 {
-                    SignalTypes? signalType = obj as SignalTypes?;
-                    if (signalType != null && signalType == SelectedSignal!.SignalType)
+                    SignalType? signalType = obj as SignalType?;
+                    if (signalType != null && signalType == SelectedSignal!.Type)
                     {
                         GeneratedSignal newSignal = signalType switch
                         {
-                            SignalTypes.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
-                            SignalTypes.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
-                            SignalTypes.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A, 0.5f),
-                            SignalTypes.Sine => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            SignalType.Triangle => new TriangleSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            SignalType.Sawtooth => new SawtoothSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
+                            SignalType.Pulse => new PulseSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A, 0.5f),
+                            SignalType.Sine => new SineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
                             _ => new CosineSignal(SelectedSignal!.Phi0, SelectedSignal!.F, SelectedSignal!.A),
                         };
 
@@ -225,11 +212,11 @@ namespace DSP_lab2.ViewModels
             }
         }
 
-        public DFTVewModel DFT { get; set; }
+        public DFTViewModel DFT { get; set; }
+        public FiltrationViewModel Filtration { get; set; }
 
         public SignalViewModel(WpfPlot signalsPlot, WpfPlot phasePlot, WpfPlot amplitudePlot)
         {
-            isComplexVisible = false;
             n = 128;
             k = 64;
 
@@ -242,9 +229,18 @@ namespace DSP_lab2.ViewModels
             PhasePlot = phasePlot;
             AmplitudePlot = amplitudePlot;
 
+            Filtration = new FiltrationViewModel();
+            Filtration.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(Filtration.SelectedFiltration)) 
+                { 
+                    RestoredY = new(DFT!.ExecuteDFT(ComputeResultingSignal(K).y.ToArray(), K, N));
+                }
+            };
+
             (resultingX, resultingY) = ComputeResultingSignal(N);
 
-            DFT = new DFTVewModel(phasePlot, amplitudePlot);
+            DFT = new DFTViewModel(Filtration, phasePlot, amplitudePlot);
             restoredY = new(DFT.ExecuteDFT(ComputeResultingSignal(K).y.ToArray(), K, N));
 
             DrawCharts();
