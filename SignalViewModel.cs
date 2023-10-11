@@ -38,7 +38,7 @@ namespace DSP_lab2
                     k = value;
                     OnPropertyChanged(nameof(K));
 
-                    RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
+                    RestoredY = new(DFT.ExecuteDFT(ComputeResultingSignal(K).y.ToArray(), K, N));
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace DSP_lab2
                 resultingY = value;
                 OnPropertyChanged(nameof(ResultingY));
 
-                RestoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
+                RestoredY = new(DFT.ExecuteDFT(ComputeResultingSignal(K).y.ToArray(), K, N));
             }
         }
 
@@ -245,7 +245,7 @@ namespace DSP_lab2
             (resultingX, resultingY) = ComputeResultingSignal(N);
 
             DFT = new DFTVewModel(phasePlot, amplitudePlot);
-            restoredY = new(DFT.ExecuteDFT(GetKElementsFromN(ResultingY), K, N));
+            restoredY = new(DFT.ExecuteDFT(ComputeResultingSignal(K).y.ToArray(), K, N));
 
             DrawCharts();
         }
@@ -263,12 +263,6 @@ namespace DSP_lab2
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private double[] GetKElementsFromN(ObservableCollection<double> doubles)
-        {
-            (_, ObservableCollection < double> y) = ComputeResultingSignal(K);
-            return y.ToArray();
         }
     }
 }

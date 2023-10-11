@@ -1,14 +1,13 @@
 ﻿using ScottPlot;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
 namespace DSP_lab2
 {
-    class DFTVewModel : INotifyPropertyChanged
+    class DFTVewModel
     {
         public WpfPlot AmplitudePlot { get; set; }
         public WpfPlot PhasePlot { get; set; }
@@ -28,40 +27,17 @@ namespace DSP_lab2
             double[] restoredValues = new double[N];
             Complex[] complexes = new Complex[k];
 
-            Task convertion = new(() =>
+            Parallel.For(0, k, (i, state) =>
             {
-                Parallel.For(0, k, (i, state) =>
-                {
-                    sinSpectrum[i] = 0;
-                    cosSpectrum[i] = 0;
-                    amplitudeSpectrum[i] = 0;
-                    phaseSpectrum[i] = 0;
+                sinSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Sin(2 * Math.PI * p.j * i / k)) / k;
+                cosSpectrum[i] = 2 * values.AsParallel().Select((v, j) => (v, j)).Sum((p) => p.v * Math.Cos(2 * Math.PI * p.j * i / k)) / k;
 
-                    Task countComplexes = new(() =>
-                    {
-                        Parallel.For(0, k, (j, state) =>
-                        {
-                            lock (sinSpectrum) sinSpectrum[i] += values[j] * Math.Sin(2 * Math.PI * j * i / k);
-                            lock (cosSpectrum) cosSpectrum[i] += values[j] * Math.Cos(2 * Math.PI * j * i / k);
-                        });
-                    });
+                complexes[i] = new(cosSpectrum[i], sinSpectrum[i]);
 
-                    countComplexes.Start();
-                    countComplexes.Wait();
+                amplitudeSpectrum[i] = Math.Sqrt(Math.Pow(sinSpectrum[i], 2) + Math.Pow(cosSpectrum[i], 2));
+                phaseSpectrum[i] = Math.Atan2(cosSpectrum[i], sinSpectrum[i]);
 
-                    sinSpectrum[i] = 2 * sinSpectrum[i] / k;
-                    cosSpectrum[i] = 2 * cosSpectrum[i] / k;
-
-                    complexes[i] = new(cosSpectrum[i], sinSpectrum[i]);
-
-                    amplitudeSpectrum[i] = Math.Sqrt(Math.Pow(sinSpectrum[i], 2) + Math.Pow(cosSpectrum[i], 2));
-                    phaseSpectrum[i] = Math.Atan2(cosSpectrum[i], sinSpectrum[i]);
-
-                });
             });
-
-            convertion.Start();
-            convertion.Wait();
 
             ComplexValues.Clear();
             foreach (Complex complex in complexes) ComplexValues.Add(complex);
@@ -74,30 +50,15 @@ namespace DSP_lab2
             AmplitudePlot.Plot.AddBar(amplitudeSpectrum, System.Drawing.Color.LightGreen);
             AmplitudePlot.Refresh();
 
-            Task restoration = new(() =>
+
+            Parallel.For(0, N, (i, state) =>
             {
-                Parallel.For(0, N, (i, state) =>
-                {
-                    restoredValues[i] = amplitudeSpectrum[0] / 2;
-
-                    Parallel.For(0, k / 2, (j, state) =>
-                    {
-                        lock (restoredValues) restoredValues[i] += amplitudeSpectrum[j] * Math.Sin(2 * Math.PI * i * j / N + phaseSpectrum[j]);
-                    });
-
-                });
+                var amplitudesIndexed = amplitudeSpectrum.Take(k / 2).Select((a, j) => (a, j));
+                var phasesIndexed = phaseSpectrum.Take(k / 2).Select((ph, j) => (ph, j));
+                restoredValues[i] = amplitudeSpectrum[0] / 2 + amplitudesIndexed.Join(phasesIndexed, ap => ap.j, php => php.j, (ap, php) => (ap.a, php.ph, php.j)).Select(p => p.a * Math.Sin(2 * Math.PI * i * p.j / N + p.ph)).Sum();
             });
 
-            restoration.Start();
-            restoration.Wait();
-
             return restoredValues;
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
